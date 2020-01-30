@@ -57,7 +57,10 @@ router.post("/login", (req, res) => {
         .first()
         .then(user => {
             if (user && bc.compareSync(password, user.password)) {
-               
+
+                req.session.loggedIn = true; // used in restricted middleware
+                req.session.userId = user.id; // in case we need the user id later
+
                 res.status(200).json({ message: `Welcome ${user.username}!` });
             } else {
                 res.status(401).json({ message: "Invalid Credentials" });
@@ -66,6 +69,21 @@ router.post("/login", (req, res) => {
         .catch(error => {
             res.status(500).json(error);
         });
+});
+
+// handles get request to logout end point
+router.get("/logout", (req, res) => {
+    if (req.session) {
+        req.session.destroy(err => {
+            if (err) {
+                res.status(500).json({Note:"error in the server!"});
+            } else {
+                res.status(200).json({ Message: "thanks for playing" });
+            }
+        });
+    } else {
+        res.status(204);
+    }
 });
 
 module.exports = router;
